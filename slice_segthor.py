@@ -13,7 +13,7 @@ from utils import map_, tqdm_
 
 
 """
-TODO: Implement image normalisation.
+(DONE) Implement image normalisation.
 CT images have a wide range of intensity values (Hounsfield units)
 Goal: normalize an image array to the range [0, 255]  and return it as a dtype=uint8
 Which is compatible with standard image formats (PNG)
@@ -21,7 +21,9 @@ Which is compatible with standard image formats (PNG)
 def norm_arr(img: np.ndarray) -> np.ndarray:
     # TODO: your code here
 
-    raise NotImplementedError("Implement norm_arr")
+    ###
+    return (img * (255 / img.max())).astype(np.uint8) # no clipping
+    ###
 
 
 def sanity_ct(ct, x, y, z, dx, dy, dz) -> bool:
@@ -52,23 +54,23 @@ def sanity_gt(gt, ct) -> bool:
 """
 TODO: Implement patient slicing.
 Context:
-  - Given an ID and paths, load the NIfTI CT volume and (if not test_mode) the GT volume.
-  - Validate with sanity_ct / sanity_gt.
-  - Normalise CT with norm_arr().
-  - Slice the 3D volumes into 2D slices, resize to `shape`, and save PNGs.
-  - Currently we have groundtruth masks marked as {0,1,2,3,4} but those values are hard to distinguish in a grayscale png.
+    - Given an ID and paths, load the NIfTI CT volume and (if not test_mode) the GT volume.
+    - Validate with sanity_ct / sanity_gt.
+    - Normalise CT with norm_arr().
+    - Slice the 3D volumes into 2D slices, resize to `shape`, and save PNGs.
+    - Currently we have groundtruth masks marked as {0,1,2,3,4} but those values are hard to distinguish in a grayscale png.
     Multiplying by 63 maps them to {0,63,126,189,252}, which keeps labels visually distinct in a grayscale PNG.
     You can use the following code, which works for already sliced 2d images:
     gt_slice *= 63
     assert gt_slice.dtype == np.uint8, gt_slice.dtype
     assert set(np.unique(gt_slice)) <= set([0, 63, 126, 189, 252]), np.unique(gt_slice)
-  - Return the original voxel spacings (dx, dy, dz).
+    - Return the original voxel spacings (dx, dy, dz).
 
-Hints:
-  - Use nibabel to load NIfTI images.
-  - Use skimage.transform.resize (tip: anti_aliasing might be useful)
-  - The PNG files should be stored in the dest_path, organised into separate subfolders: train/img, train/gt, val/img, and val/gt
-  - Use consistent filenames: e.g. f"{id_}_{idz:04d}.png" inside subfolders "img" and "gt"; where idz is the slice index.
+    Hints:
+    - Use nibabel to load NIfTI images.
+    - Use skimage.transform.resize (tip: anti_aliasing might be useful)
+    - The PNG files should be stored in the dest_path, organised into separate subfolders: train/img, train/gt, val/img, and val/gt
+    - Use consistent filenames: e.g. f"{id_}_{idz:04d}.png" inside subfolders "img" and "gt"; where idz is the slice index.
 """
 
 def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int, int], test_mode=False)\
@@ -81,22 +83,70 @@ def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int
 
     # --------- FILL FROM HERE -----------
 
-    raise NotImplementedError("Implement slice_patient")
+    ###
+    
+    # So far
+    CT = nib.load(ct_path)
+    ct_slice = norm_arr(CT.get_fdata())
+    if not test_mode:
+        GT = nib.load(id_path / "GT.nii.gz")
+        gt_slice = GT.get_fdata().astype(np.uint8)
+        sanity_gt(gt_slice, ct_slice)
+
+    # For CT
+    x, y, z = ct_slice.shape
+    ct_slice = np.transpose(ct_slice, (2, 0, 1))
+    ct_slice = skimage.transform.resize(ct_slice, (z, shape[0], shape[1]), preserve_range=True)
+    ct_slice = norm_arr(ct_slice)
+    if not os.path.exists(dest_path / "img"):
+        os.makedirs(dest_path / "img")
+    for i in range(z):
+        skimage.io.imsave(dest_path / "img" / f"{id_}_{i:04d}.png", ct_slice[i])
+
+    # For GT
+    if not test_mode:
+        a, b, c = gt_slice.shape
+        gt_slice *= 63
+        gt_slice = np.transpose(gt_slice, (2, 0, 1))
+        gt_slice = skimage.transform.resize(gt_slice, (c, shape[0], shape[1]))
+        gt_slice = gt_slice.astype(np.uint8)
+        print()
+        print(set(np.unique(gt_slice)))
+        assert gt_slice.dtype == np.uint8, gt_slice.dtype
+        assert set(np.unique(gt_slice)) <= set([0, 63, 126, 189, 252]), np.unique(gt_slice)
+        if not os.path.exists(dest_path / "gt"):
+            os.makedirs(dest_path / "gt")
+        for i in range(c):
+            skimage.io.imsave(dest_path / "gt" /f"{id_}_{i:04d}.png", gt_slice[i])
+
+    return CT.get_fdata()
+    ###
 
 
 """
-TODO: Implement a simple train/val split.
+(DONE) Implement a simple train/val split.
 Requirements:
-  - List patient IDs from <src_path>/train (folder names).
-  - Shuffle them (respect a seed set in main()).
-  - Take the first `retains` as validation, and the rest as training.
-  - Return (training_ids, validation_ids).
+    - List patient IDs from <src_path>/train (folder names).
+    - Shuffle them (respect a seed set in main()).
+    - Take the first `retains` as validation, and the rest as training.
+    - Return (training_ids, validation_ids).
 """
 
 def get_splits(src_path: Path, retains: int) -> tuple[list[str], list[str]]:
     # TODO: your code here
 
-    raise NotImplementedError("Implement get_splits")
+    ###
+    # Extract ID list from the path
+    assert src_path.exists(), src_path
+    ids: list = [os.path.basename(os.path.normpath(path[0])) for path in os.walk(os.path.join\
+        (src_path, "train")) if os.path.basename(os.path.normpath(path[0])) != "train"]
+    random.shuffle(ids)
+
+    # Split into training and validation
+    validation_ids = ids[:retains]
+    training_ids = ids[retains:]
+    return training_ids, validation_ids
+    ###
 
 def main(args: argparse.Namespace):
     src_path: Path = Path(args.source_dir)
@@ -119,9 +169,9 @@ def main(args: argparse.Namespace):
         print(f"Slicing {len(split_ids)} pairs to {dest_mode}")
 
         pfun: Callable = partial(slice_patient,
-                                 dest_path=dest_mode,
-                                 source_path=src_path,
-                                 shape=tuple(args.shape))
+                                dest_path=dest_mode,
+                                source_path=src_path,
+                                shape=tuple(args.shape))
 
         resolutions: list[tuple[float, float, float]]
         iterator = tqdm_(split_ids)
