@@ -11,6 +11,11 @@ import numpy as np
 
 from utils import map_, tqdm_
 
+# MY ADDITIONS
+import nibabel as nib
+import os
+import skimage
+
 
 """
 (DONE) Implement image normalisation.
