@@ -101,28 +101,26 @@ def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int
     # For CT
     x, y, z = ct_slice.shape
     ct_slice = np.transpose(ct_slice, (2, 0, 1))
-    ct_slice = skimage.transform.resize(ct_slice, (z, shape[0], shape[1]), preserve_range=True)
-    ct_slice = norm_arr(ct_slice)
-    if not os.path.exists(dest_path / "img"):
-        os.makedirs(dest_path / "img")
     for i in range(z):
-        skimage.io.imsave(dest_path / "img" / f"{id_}_{i:04d}.png", ct_slice[i])
+        image = skimage.transform.resize(ct_slice[i], shape, preserve_range=True)
+        image = norm_arr(image)
+        if not os.path.exists(dest_path / "img"):
+            os.makedirs(dest_path / "img")
+        skimage.io.imsave(dest_path / "img" / f"{id_}_{i:04d}.png", image)
 
     # For GT
     if not test_mode:
         a, b, c = gt_slice.shape
         gt_slice *= 63
-        gt_slice = np.transpose(gt_slice, (2, 0, 1))
-        gt_slice = skimage.transform.resize(gt_slice, (c, shape[0], shape[1]))
-        gt_slice = gt_slice.astype(np.uint8)
-        print()
-        print(set(np.unique(gt_slice)))
         assert gt_slice.dtype == np.uint8, gt_slice.dtype
         assert set(np.unique(gt_slice)) <= set([0, 63, 126, 189, 252]), np.unique(gt_slice)
-        if not os.path.exists(dest_path / "gt"):
-            os.makedirs(dest_path / "gt")
+        gt_slice = np.transpose(gt_slice, (2, 0, 1))
         for i in range(c):
-            skimage.io.imsave(dest_path / "gt" /f"{id_}_{i:04d}.png", gt_slice[i])
+            image = skimage.transform.resize(gt_slice[i], shape, preserve_range=True)   
+            image = image.astype(np.uint8)     
+            if not os.path.exists(dest_path / "gt"):
+                os.makedirs(dest_path / "gt")
+            skimage.io.imsave(dest_path / "gt" /f"{id_}_{i:04d}.png", image)
 
     return CT.get_fdata()
     ###
