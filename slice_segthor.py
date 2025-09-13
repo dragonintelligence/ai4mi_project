@@ -27,7 +27,7 @@ def norm_arr(img: np.ndarray) -> np.ndarray:
     # TODO: your code here
 
     ###
-    return (img * (255 / img.max())).astype(np.uint8) # no clipping
+    return ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
     ###
 
 
@@ -57,7 +57,7 @@ def sanity_gt(gt, ct) -> bool:
 
 
 """
-TODO: Implement patient slicing.
+(DONE) Implement patient slicing.
 Context:
     - Given an ID and paths, load the NIfTI CT volume and (if not test_mode) the GT volume.
     - Validate with sanity_ct / sanity_gt.
@@ -89,7 +89,6 @@ def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int
     # --------- FILL FROM HERE -----------
 
     ###
-    
     # So far
     CT = nib.load(ct_path)
     ct_slice = norm_arr(CT.get_fdata())
@@ -100,7 +99,7 @@ def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int
 
     # For CT
     x, y, z = ct_slice.shape
-    ct_slice = np.transpose(ct_slice, (2, 0, 1))
+    ct_slice = np.transpose(ct_slice, (2, 1, 0))
     for i in range(z):
         image = skimage.transform.resize(ct_slice[i], shape, preserve_range=True)
         image = norm_arr(image)
@@ -114,7 +113,7 @@ def slice_patient(id_: str, dest_path: Path, source_path: Path, shape: tuple[int
         gt_slice *= 63
         assert gt_slice.dtype == np.uint8, gt_slice.dtype
         assert set(np.unique(gt_slice)) <= set([0, 63, 126, 189, 252]), np.unique(gt_slice)
-        gt_slice = np.transpose(gt_slice, (2, 0, 1))
+        gt_slice = np.transpose(gt_slice, (2, 1, 0))
         for i in range(c):
             image = skimage.transform.resize(gt_slice[i], shape, preserve_range=True)   
             image = image.astype(np.uint8)     
