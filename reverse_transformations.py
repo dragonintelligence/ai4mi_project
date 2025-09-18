@@ -25,7 +25,8 @@ def reshape_heart_patient(id_: str, path: Path) -> None:
     R2: np.ndarray = np.array([[np.cos(fi), -np.sin(fi), 0, 0], [np.sin(fi), np.cos(fi), 0, 0], \
         [0, 0, 1, 0], [0, 0, 0, 1]])
     T4: np.ndarray = np.array([[1, 0, 0, 50], [0, 1, 0, 40], [0, 0, 1, 15], [0, 0, 0, 1]])
-    matrix: np.ndarray = np.linalg.inv(T1) @ np.linalg.inv(R2) @ T1 @ np.linalg.inv(T4) 
+    #matrix: np.ndarray = np.linalg.inv(T1) @ np.linalg.inv(R2) @ T1 @ np.linalg.inv(T4)
+    matrix: np.ndarray = T4 @ np.linalg.inv(T1) @ R2 @ T1 
 
     # TRANSFORMATION -> should it be per slice or can it be total?
     new_image: np.ndarray = scipy.ndimage.affine_transform(heart_mask, matrix, order=0) \
