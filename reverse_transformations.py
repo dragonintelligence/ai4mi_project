@@ -8,39 +8,47 @@ import os
 from utils import map_, tqdm_
 
 
-def reshape_heart_patient(id_: str, path: Path) -> None:
-    # GETTING THE FILE
-    GT = nib.load(path / "train" / id_ / "GT.nii.gz")
-    image = GT.get_fdata().astype(np.uint8)
+def reshape_heart_patient(path: Path) -> None:
+    """
+    Function that reverses the transformation applied on the ground truth segmentation
+    for a specific patient, only on the heart class and saves the correct images in the 
+    same folder (without returning anything).
+    Parameters: patient folder path
+    """
+
+    # OPEN THE FILE
+    GT = nib.load(path / "GT.nii.gz")
+    image: np.ndarray = GT.get_fdata().astype(np.uint8)
 
     # EXTRACT ONLY THE HEART
-    heart_class: int = 2 # assumption, subject to change
+    heart_class: int = 2 # assumption that turned out to be correct
     heart_mask: np.ndarray = (image == heart_class).astype(np.uint8) * heart_class
 
-    # THE MATRIX
-        # APPARENLY REAL ORDER WAS T4 -> T3 -> R2 -> T1
-        # SO THE OG MATRIX WAS T1 @ R2 @ T3 @ T4
-        # TO REVERSE THAT, IT SHOULD BE T4^-1 @ T1 @ R2^-1 @ T1^-1
-    fi = - (27 / 180) * np.pi
+    # TRANSFORMATION MATRICES & REVERSE OPERATION
+    fi: float = - (27 / 180) * np.pi
     T1: np.ndarray = np.array([[1, 0, 0, 275], [0, 1, 0, 200], [0, 0, 1, 0], [0, 0, 0, 1]])
     R2: np.ndarray = np.array([[np.cos(fi), -np.sin(fi), 0, 0], [np.sin(fi), np.cos(fi), 0, 0], \
         [0, 0, 1, 0], [0, 0, 0, 1]])
     T4: np.ndarray = np.array([[1, 0, 0, 50], [0, 1, 0, 40], [0, 0, 1, 15], [0, 0, 0, 1]])
-    matrix: np.ndarray = np.linalg(T4) @ T1 @ np.linalg(R2) @ np.linalg(T1) 
+    matrix: np.ndarray = np.linalg.inv(T4) @ T1 @ np.linalg.inv(R2) @ np.linalg.inv(T1) 
 
-    # TRANSFORMATION -> should it be per slice or can it be total?
+    # TRANSFORMATION
     new_image: np.ndarray = scipy.ndimage.affine_transform(heart_mask, matrix, order=0) \
         .astype(np.uint8)
 
-    # PLACE BACK
-    new_image += (image - heart_mask)
+    # PLACE BACK IN ORIGINAL IMAGE
+    new_image += (image - heart_mask) # remove old heart & add new heart simultaneously
 
-    # SAVE
+    # SAVE NEW IMAGE
     new_image = nib.Nifti1Image(new_image, GT.affine)
-    new_image.to_filename(path / "train" / id_ / "GT_fixed.nii.gz")
+    new_image.to_filename(path / "GT_fixed.nii.gz")
 
 
 def main(args: argparse.Namespace):
+    """
+    Main function, which applies the function defined above for each patient in the folder.
+    """
+
     # GET PATH
     path: Path = Path(args.path)
     if not path.exists():
@@ -49,11 +57,13 @@ def main(args: argparse.Namespace):
 
     # APPLY FUNCTION FOR EACH PATIENT
     for patient in tqdm_([*os.walk(path / "train")][0][1]):
-        reshape_heart_patient(patient, path)
-
+        reshape_heart_patient(path / "train" / patient)
 
 
 def get_args() -> argparse.Namespace:
+    """
+    Arguments: dataset path
+    """
     parser = argparse.ArgumentParser(description = "Slicing parameters")
     parser.add_argument('--path', type=str, required=True)
     args = parser.parse_args()
