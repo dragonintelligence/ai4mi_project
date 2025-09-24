@@ -41,12 +41,12 @@ from dataset import SliceDataset
 from ShallowNet import shallowCNN
 from ENet import ENet
 from utils import (Dcm,
-                   class2one_hot,
-                   probs2one_hot,
-                   probs2class,
-                   tqdm_,
-                   dice_coef,
-                   save_images)
+                    class2one_hot,
+                    probs2one_hot,
+                    probs2class,
+                    tqdm_,
+                    dice_coef,
+                    save_images)
 
 from losses import (CrossEntropy)
 
@@ -98,20 +98,20 @@ def setup(args) -> tuple[nn.Module, Any, Any, DataLoader, DataLoader, int]:
     ])
 
     train_set = SliceDataset('train',
-                             root_dir,
-                             img_transform=img_transform,
-                             gt_transform=gt_transform,
-                             debug=args.debug)
+                            root_dir,
+                            img_transform=img_transform,
+                            gt_transform=gt_transform,
+                            debug=args.debug)
     train_loader = DataLoader(train_set,
-                              batch_size=B,
-                              num_workers=5,
-                              shuffle=True)
+                            batch_size=B,
+                            num_workers=5,
+                            shuffle=True)
 
     val_set = SliceDataset('val',
-                           root_dir,
-                           img_transform=img_transform,
-                           gt_transform=gt_transform,
-                           debug=args.debug)
+                            root_dir,
+                            img_transform=img_transform,
+                            gt_transform=gt_transform,
+                            debug=args.debug)
     val_loader = DataLoader(val_set,
                             batch_size=B,
                             num_workers=5,
@@ -204,7 +204,7 @@ def runTraining(args):
                                                     "Loss": f"{log_loss[e, :i + 1].mean():5.2e}"}
                     if K > 2:
                         postfix_dict |= {f"Dice-{k}": f"{log_dice[e, :j, k].mean():05.3f}"
-                                         for k in range(1, K)}
+                                        for k in range(1, K)}
                     tq_iter.set_postfix(postfix_dict)
 
         # I save it at each epochs, in case the code crashes or I decide to stop it early
@@ -242,7 +242,7 @@ def main():
     parser.add_argument('--gpu', action='store_true')
     parser.add_argument('--debug', action='store_true',
                         help="Keep only a fraction (10 samples) of the datasets, "
-                             "to test the logics around epochs and logging easily.")
+                            "to test the logics around epochs and logging easily.")
 
     args = parser.parse_args()
 
