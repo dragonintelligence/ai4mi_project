@@ -5,7 +5,7 @@ from pathlib import Path
 import scipy
 import argparse
 import os
-from utils import map_, tqdm_
+from utils import tqdm_
 
 
 def reshape_heart_patient(path: Path) -> None:
