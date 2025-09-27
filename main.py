@@ -37,16 +37,18 @@ from torch import nn, Tensor
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
+from functools import partial 
+
 from dataset import SliceDataset
 from ShallowNet import shallowCNN
 from ENet import ENet
 from utils import (Dcm,
-                    class2one_hot,
-                    probs2one_hot,
-                    probs2class,
-                    tqdm_,
-                    dice_coef,
-                    save_images)
+                   class2one_hot,
+                   probs2one_hot,
+                   probs2class,
+                   tqdm_,
+                   dice_coef,
+                   save_images)
 
 from losses import (CrossEntropy)
 
@@ -57,6 +59,23 @@ datasets_params["TOY2"] = {'K': 2, 'net': shallowCNN, 'B': 2, 'kernels': 8, 'fac
 datasets_params["SEGTHOR"] = {'K': 5, 'net': ENet, 'B': 8, 'kernels': 8, 'factor': 2}
 datasets_params["SEGTHOR_CLEAN"] = {'K': 5, 'net': ENet, 'B': 8, 'kernels': 8, 'factor': 2}
 
+def img_transform(img):
+        img = img.convert('L')
+        img = np.array(img)[np.newaxis, ...]
+        img = img / 255  # max <= 1
+        img = torch.tensor(img, dtype=torch.float32)
+        return img
+
+def gt_transform(K, img):
+        img = np.array(img)[...]
+        # The idea is that the classes are mapped to {0, 255} for binary cases
+        # {0, 85, 170, 255} for 4 classes
+        # {0, 51, 102, 153, 204, 255} for 6 classes
+        # Very sketchy but that works here and that simplifies visualization
+        img = img / (255 / (K - 1)) if K != 5 else img / 63  # max <= 1
+        img = torch.tensor(img, dtype=torch.int64)[None, ...]  # Add one dimension to simulate batch
+        img = class2one_hot(img, K=K)
+        return img[0]
 
 def setup(args) -> tuple[nn.Module, Any, Any, DataLoader, DataLoader, int]:
     # Networks and scheduler
@@ -78,43 +97,26 @@ def setup(args) -> tuple[nn.Module, Any, Any, DataLoader, DataLoader, int]:
     B: int = datasets_params[args.dataset]['B']
     root_dir = Path("data") / args.dataset
 
-    img_transform = transforms.Compose([
-        lambda img: img.convert('L'),
-        lambda img: np.array(img)[np.newaxis, ...],
-        lambda nd: nd / 255,  # max <= 1
-        lambda nd: torch.tensor(nd, dtype=torch.float32)
-    ])
 
-    gt_transform = transforms.Compose([
-        lambda img: np.array(img)[...],
-        # The idea is that the classes are mapped to {0, 255} for binary cases
-        # {0, 85, 170, 255} for 4 classes
-        # {0, 51, 102, 153, 204, 255} for 6 classes
-        # Very sketchy but that works here and that simplifies visualization
-        lambda nd: nd / (255 / (K - 1)) if K != 5 else nd / 63,  # max <= 1
-        lambda nd: torch.tensor(nd, dtype=torch.int64)[None, ...],  # Add one dimension to simulate batch
-        lambda t: class2one_hot(t, K=K),
-        itemgetter(0)
-    ])
 
     train_set = SliceDataset('train',
-                            root_dir,
-                            img_transform=img_transform,
-                            gt_transform=gt_transform,
-                            debug=args.debug)
+                             root_dir,
+                             img_transform=img_transform,
+                             gt_transform= partial(gt_transform, K),
+                             debug=args.debug)
     train_loader = DataLoader(train_set,
-                            batch_size=B,
-                            num_workers=0,
-                            shuffle=True)
+                              batch_size=B,
+                              num_workers=5,
+                              shuffle=True)
 
     val_set = SliceDataset('val',
-                            root_dir,
-                            img_transform=img_transform,
-                            gt_transform=gt_transform,
-                            debug=args.debug)
+                           root_dir,
+                           img_transform=img_transform,
+                           gt_transform=partial(gt_transform, K),
+                           debug=args.debug)
     val_loader = DataLoader(val_set,
                             batch_size=B,
-                            num_workers=0,
+                            num_workers=5,
                             shuffle=False)
 
     args.dest.mkdir(parents=True, exist_ok=True)
@@ -204,7 +206,7 @@ def runTraining(args):
                                                     "Loss": f"{log_loss[e, :i + 1].mean():5.2e}"}
                     if K > 2:
                         postfix_dict |= {f"Dice-{k}": f"{log_dice[e, :j, k].mean():05.3f}"
-                                        for k in range(1, K)}
+                                         for k in range(1, K)}
                     tq_iter.set_postfix(postfix_dict)
 
         # I save it at each epochs, in case the code crashes or I decide to stop it early
@@ -242,7 +244,7 @@ def main():
     parser.add_argument('--gpu', action='store_true')
     parser.add_argument('--debug', action='store_true',
                         help="Keep only a fraction (10 samples) of the datasets, "
-                            "to test the logics around epochs and logging easily.")
+                             "to test the logics around epochs and logging easily.")
 
     args = parser.parse_args()
 
