@@ -14,7 +14,7 @@ module load CUDA/12.4.0
 module load Anaconda3/2023.07-2
 
 # Setup
-cd ai4mi_project
+cd $HOME/ai4mi_project
 git submodule init
 git submodule update
 
@@ -22,3 +22,4 @@ git submodule update
 source activate ai4mi
 
 # Run main.py
+python -O main.py --dataset SEGTHOR_CLEAN --mode full --epoch 25 --dest ./results --gpu

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=plot
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=01:00:00
+#SBATCH --output=output/slurm_output_%A.out
+
+module purge
+module load 2023
+module load CUDA/12.4.0
+module load Anaconda3/2023.07-2
+
+# Setup
+cd $HOME/ai4mi_project
+git submodule init
+git submodule update
+
+# Environment
+source activate ai4mi
+
+# Plot results from main run
+python plot.py --metric_file results/dice_tra.npy --dest results/dice_tra.png
+python plot.py --metric_file results/dice_val.npy --dest results/dice_val.png
+python plot.py --metric_file results/loss_tra.npy --dest results/loss_tra.png
+python plot.py --metric_file results/loss_val.npy --dest results/loss_val.png
