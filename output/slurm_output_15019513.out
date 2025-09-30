@@ -1,42 +1,0 @@
-============================================================================================== 
-Warning! Mixing Conda and module environments may lead to corruption of the
-user environment. 
-We do not recommend users mixing those two environments unless absolutely
-necessary. Note that 
-SURF does not provide any support for Conda environment.
-For more information, please refer to our software policy page:
-https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
-
-Remember that many packages have already been installed on the system and can
-be loaded using 
-the 'module load <package__name>' command. If you are uncertain if a package is
-already available 
-on the system, please use 'module avail' or 'module spider' to search for it.
-============================================================================================== 
-Namespace(source_dir='data/segthor_fixed', dest_dir='data/SEGTHOR_CLEAN_tmp', shape=[512, 512], retains=10, seed=0, fold=0, process=-1)
-Founds 40 in the id list
-['Patient_01', 'Patient_02', 'Patient_03', 'Patient_04', 'Patient_05', 'Patient_06', 'Patient_07', 'Patient_08', 'Patient_09', 'Patient_10']
-Founds 0 test ids
-[]
-Slicing 30 pairs to data/SEGTHOR_CLEAN_tmp/train
-  0%|          | 0/30 [?it/s]  3%|▎         | 1/30 [ 2.47it/s]100%|██████████| 30/30 [73.97it/s]
-Slicing 10 pairs to data/SEGTHOR_CLEAN_tmp/val
-  0%|          | 0/10 [?it/s] 10%|█         | 1/10 [ 2.59it/s]100%|██████████| 10/10 [25.86it/s]
-Slicing 0 pairs to data/SEGTHOR_CLEAN_tmp/test
-|          | 0/0 [?it/s]|          | 0/0 [?it/s]
-Saved spacing dictionnary to <_io.BufferedWriter name='data/SEGTHOR_CLEAN_tmp/spacing.pkl'>
-
-JOB STATISTICS
-==============
-Job ID: 15019513
-Cluster: snellius
-User/Group: scur1040/scur1040
-State: RUNNING
-Nodes: 1
-Cores per node: 18
-CPU Utilized: 00:00:00
-CPU Efficiency: 0.00% of 00:16:30 core-walltime
-Job Wall-clock time: 00:00:55
-Memory Utilized: 0.00 MB
-Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
-WARNING: Efficiency statistics can only be obtained after the job has ended as seff tool is based on the accounting database data.

@@ -1,3 +1,4 @@
+# FILL IN WITH SOLUTION IF GIVEN
 from pathlib import Path
 import numpy as np
 import nibabel as nib

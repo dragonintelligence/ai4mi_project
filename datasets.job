@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=Dataset
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=01:00:00
+#SBATCH --output=output/slurm_output_%A.out
+
+module purge
+module load 2023
+module load CUDA/12.4.0
+module load Anaconda3/2023.07-2
+
+# Setup
+cd $HOME/ai4mi_project
+git submodule init
+git submodule update
+
+# Environment
+    # conda remove -n ai4mi --all -y
+    # conda create -n ai4mi python=3.10 -y
+source activate ai4mi
+    # pip install --upgrade pip
+    # pip install -r requirements.txt
+
+# TOY DATASET
+python gen_two_circles.py --dest data/TOY2_tmp -n 1000 100 -r 25 -wh 256 256
+mv data/TOY2_tmp data/TOY2
+
+# SEGTHOR_CLEAN DATASET
+make data/SEGTHOR_CLEAN CFLAGS=-O -n
+python -O sabotage.py --mode inv --source_dir data/segthor_train --dest_dir data/segthor_fixed_tmp -K 2 --regex_gt "GT.nii.gz" -p 4
+mv data/segthor_fixed_tmp data/segthor_fixed
+python -O slice_segthor.py --source_dir data/segthor_fixed --dest_dir data/SEGTHOR_CLEAN_tmp --shape 512 512 --retain 10 -p -1
+mv data/SEGTHOR_CLEAN_tmp data/SEGTHOR_CLEAN
