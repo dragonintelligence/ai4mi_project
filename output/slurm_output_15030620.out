@@ -1,0 +1,50 @@
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+{'background_class': 0,
+ 'chill': False,
+ 'cpu': False,
+ 'crop': False,
+ 'ignored_classes': None,
+ 'metrics': ['3d_hd95', '3d_dice'],
+ 'num_classes': 5,
+ 'num_workers': 9,
+ 'overwrite': False,
+ 'pred_extension': '.nii.gz',
+ 'pred_folder': PosixPath('results/best_epoch/val/pred'),
+ 'ref_extension': '.nii.gz',
+ 'ref_folder': PosixPath('results/best_epoch/val/gt'),
+ 'save_folder': PosixPath('results/best_epoch/val')}
+[34m>>> Initializing Volume dataset with 10 volumes[39m[49m
+>>  results/best_epoch/val/gt, results/best_epoch/val/pred
+[32m> All stems found in both folders[39m[49m
+>> Computing:   0%|          | 0/10 [?it/s]>> Computing:   0%|          | 0/10 [?it/s, batch_shape=[1, 512, 512, 229], voxelspacing=['0.977', '0.977', '2.000']]>> Computing:  10%|█         | 1/10 [ 3.56s/it, batch_shape=[1, 512, 512, 229], voxelspacing=['0.977', '0.977', '2.000']]>> Computing:  10%|█         | 1/10 [ 3.56s/it, batch_shape=[1, 512, 512, 246], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  20%|██        | 2/10 [ 1.65s/it, batch_shape=[1, 512, 512, 246], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  20%|██        | 2/10 [ 1.65s/it, batch_shape=[1, 512, 512, 228], voxelspacing=['0.977', '0.977', '2.000']]>> Computing:  30%|███       | 3/10 [ 1.05s/it, batch_shape=[1, 512, 512, 228], voxelspacing=['0.977', '0.977', '2.000']]>> Computing:  30%|███       | 3/10 [ 1.05s/it, batch_shape=[1, 512, 512, 166], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  40%|████      | 4/10 [ 1.27it/s, batch_shape=[1, 512, 512, 166], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  40%|████      | 4/10 [ 1.27it/s, batch_shape=[1, 512, 512, 158], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  50%|█████     | 5/10 [ 1.70it/s, batch_shape=[1, 512, 512, 158], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  50%|█████     | 5/10 [ 1.70it/s, batch_shape=[1, 512, 512, 181], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  60%|██████    | 6/10 [ 2.17it/s, batch_shape=[1, 512, 512, 181], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  60%|██████    | 6/10 [ 2.17it/s, batch_shape=[1, 512, 512, 179], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  70%|███████   | 7/10 [ 2.29it/s, batch_shape=[1, 512, 512, 179], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  70%|███████   | 7/10 [ 2.29it/s, batch_shape=[1, 512, 512, 171], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  80%|████████  | 8/10 [ 2.60it/s, batch_shape=[1, 512, 512, 171], voxelspacing=['0.977', '0.977', '2.500']]>> Computing:  80%|████████  | 8/10 [ 2.60it/s, batch_shape=[1, 512, 512, 181], voxelspacing=['1.367', '1.367', '2.000']]>> Computing:  90%|█████████ | 9/10 [ 3.00it/s, batch_shape=[1, 512, 512, 181], voxelspacing=['1.367', '1.367', '2.000']]>> Computing:  90%|█████████ | 9/10 [ 3.00it/s, batch_shape=[1, 512, 512, 228], voxelspacing=['0.977', '0.977', '2.000']]>> Computing: 100%|██████████| 10/10 [ 3.18it/s, batch_shape=[1, 512, 512, 228], voxelspacing=['0.977', '0.977', '2.000']]                                                                                                                          >>> results/best_epoch/val/pred
+3d_hd95 [ 1.6478618 15.056645  11.169563  27.889368   9.310038 ]
+3d_dice [0.99852115 0.51664674 0.86268157 0.79931986 0.8162835 ]
+
+JOB STATISTICS
+==============
+Job ID: 15030620
+Cluster: snellius
+User/Group: scur1040/scur1040
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:05:42 core-walltime
+Job Wall-clock time: 00:00:19
+Memory Utilized: 0.00 MB
+Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
+WARNING: Efficiency statistics can only be obtained after the job has ended as seff tool is based on the accounting database data.

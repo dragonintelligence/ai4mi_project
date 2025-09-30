@@ -19,26 +19,9 @@ git submodule init
 git submodule update
 
 # Environment
-conda remove -n ai4mi --all -y
-conda create -n ai4mi python=3.11 -y
 source activate ai4mi
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install git+https://github.com/jeromerony/distorch.git
 
-# Test
-srun python -uc "import torch
-import distorch
-device = torch.device('cuda')
-A = torch.tensor([[0, 0, 0, 0, 0],
-                  [0, 1, 0, 0, 0],
-                  [0, 0, 1, 1, 0],
-                  [0, 1, 1, 1, 0],
-                  [0, 0, 0, 0, 0]], dtype=torch.bool, device=device)
-B = torch.tensor([[1, 1, 0, 0, 0],
-                  [0, 1, 1, 0, 0],
-                  [0, 1, 1, 1, 0],
-                  [0, 1, 1, 0, 0],
-                  [0, 0, 0, 0, 0]], dtype=torch.bool, device=device)
-metrics = distorch.boundary_metrics(A, B)
-print(metrics)"
+# Run compute_metrics from distorch
+python -O distorch/compute_metrics.py --ref_folder results/best_epoch/val/gt --pred_folder \
+    results/best_epoch/val/pred --ref_extension .nii.gz --pred_extension .nii.gz --num_classes 5 \
+    --metrics 3d_hd95 3d_dice --background_class 0 --save_folder results/best_epoch/val
