@@ -21,6 +21,7 @@ git submodule update
 # Environment
 source activate ai4mi
 
-# Test stitch on original slices & GT
-python -O stitch.py --data_folder data/SEGTHOR_CLEAN/val/gt --dest_folder data/SEGTHOR_CLEAN/val/gt/pred --source_scan_pattern data/segthor_fixed/train/{id}/GT.nii.gz
-#python -O stitch.py --data_folder results/best_epoch/val --dest_folder results/best_epoch/val/pred
+# Run stitch.py
+python -O stitch.py --data_folder results/best_epoch/val --dest_folder results/best_epoch/val/pred \
+    --source_scan_pattern data/segthor_fixed/train/{id}/GT.nii.gz --num_classes 5 \
+    --grp_regex='(Patient_\d\d)_\d\d\d\d'

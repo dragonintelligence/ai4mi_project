@@ -1,0 +1,44 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu_a100
+#SBATCH --gpus=1
+#SBATCH --job-name=distorch
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=9
+#SBATCH --time=01:00:00
+#SBATCH --output=output/slurm_output_%A.out
+
+module purge
+module load 2023
+module load CUDA/12.4.0
+module load Anaconda3/2023.07-2
+
+# Setup
+cd $HOME/ai4mi_project
+git submodule init
+git submodule update
+
+# Environment
+conda remove -n ai4mi --all -y
+conda create -n ai4mi python=3.11 -y
+source activate ai4mi
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install git+https://github.com/jeromerony/distorch.git
+
+# Test
+srun python -uc "import torch
+import distorch
+device = torch.device('cuda')
+A = torch.tensor([[0, 0, 0, 0, 0],
+                  [0, 1, 0, 0, 0],
+                  [0, 0, 1, 1, 0],
+                  [0, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 0]], dtype=torch.bool, device=device)
+B = torch.tensor([[1, 1, 0, 0, 0],
+                  [0, 1, 1, 0, 0],
+                  [0, 1, 1, 1, 0],
+                  [0, 1, 1, 0, 0],
+                  [0, 0, 0, 0, 0]], dtype=torch.bool, device=device)
+metrics = distorch.boundary_metrics(A, B)
+print(metrics)"
